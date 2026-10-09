@@ -114,19 +114,22 @@ async function deleteContainerById(containerId: string) {
 
 export async function deleteContainer(formData: FormData) {
   const containerId = String(formData.get("containerId") || "").trim();
+  let errorMessage: string | null = null;
 
   try {
     await deleteContainerById(containerId);
-    redirect(`${DELETE_ERROR_PATH}?success=Container deleted successfully`);
   } catch (error) {
-    if (error instanceof Error && "digest" in error && error.digest === "NEXT_REDIRECT") {
-      throw error;
-    }
-
-    const message =
+    errorMessage =
       error instanceof Error ? error.message : "Unable to delete container.";
-    redirect(`${DELETE_ERROR_PATH}?error=${encodeURIComponent(message)}`);
   }
+
+  if (errorMessage) {
+    redirect(
+      `${DELETE_ERROR_PATH}?error=${encodeURIComponent(errorMessage)}`
+    );
+  }
+
+  redirect(`${DELETE_ERROR_PATH}?success=Container deleted successfully`);
 }
 
 export async function deleteContainerByIdDirect(containerId: string) {
@@ -134,7 +137,12 @@ export async function deleteContainerByIdDirect(containerId: string) {
     await deleteContainerById(containerId);
     return { success: true as const };
   } catch (error) {
-    if (error instanceof Error && "digest" in error && error.digest === "NEXT_REDIRECT") {
+    if (
+      error instanceof Error &&
+      "digest" in error &&
+      typeof error.digest === "string" &&
+      error.digest.startsWith("NEXT_REDIRECT;")
+    ) {
       throw error;
     }
 

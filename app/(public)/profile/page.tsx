@@ -19,15 +19,6 @@ export default async function ProfilePage() {
     .eq("id", user.id)
     .single();
 
-  /*
-   * Owners should use the owner dashboard.
-   * Redirect them away from the shared profile page
-   * so they don't see mixed renter-style UI.
-   */
-  if (profile?.role === "owner" || profile?.role === "admin") {
-    redirect("/owner");
-  }
-
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">

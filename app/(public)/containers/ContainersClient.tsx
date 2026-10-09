@@ -53,10 +53,12 @@ export default function ContainersClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const initialCategory = searchParams.get("category") || "ALL";
   const initialSort = searchParams.get("sort") || "newest";
   const initialSearch = searchParams.get("search") || "";
-  const initialType = searchParams.get("type") || "";
+  const initialType =
+    searchParams.get("type") ||
+    searchParams.get("category") ||
+    "ALL";
 
   const [containers, setContainers] = useState<ContainerItem[]>([]);
   const [primaryImages, setPrimaryImages] = useState<PrimaryImageMap>(new Map());
@@ -68,11 +70,29 @@ export default function ContainersClient() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const selectedCategoryId = useMemo(() => {
-    if (!type || type === "Any type") return "ALL";
+    const normalizedType = type.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    if (!normalizedType || normalizedType === "all" || normalizedType === "any-type") {
+      return "ALL";
+    }
+
+    const aliases: Record<string, string[]> = {
+      "20ft-standard": ["dry-storage-container"],
+      "40ft-high-cube": ["high-cube-container"],
+      refrigerated: ["refrigerated-container"],
+      "open-top": ["open-top-container"],
+    };
+
     const matched = categories.find(
-      (c) =>
-        c.name.toLowerCase() === type.toLowerCase() ||
-        c.slug.toLowerCase() === type.toLowerCase()
+      (category) =>
+        category.id === type ||
+        category.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") === normalizedType ||
+        category.slug.toLowerCase().replace(/[^a-z0-9]+/g, "-") === normalizedType ||
+        aliases[normalizedType]?.includes(
+          category.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")
+        ) ||
+        aliases[normalizedType]?.includes(
+          category.slug.toLowerCase().replace(/[^a-z0-9]+/g, "-")
+        )
     );
     return matched?.id || "ALL";
   }, [type, categories]);
@@ -248,7 +268,8 @@ export default function ContainersClient() {
     );
   }, [containers, search, selectedCategoryId, sort]);
 
-  const hasActiveFilters = search || type !== "ALL" || sort !== "newest";
+  const hasActiveFilters =
+    search || selectedCategoryId !== "ALL" || sort !== "newest";
 
   if (loading) {
     return (
@@ -294,7 +315,7 @@ export default function ContainersClient() {
         <div className="hidden items-center gap-3 pt-3 sm:flex">
           <div className="relative flex-1">
             <select
-              value={type}
+              value={selectedCategoryId}
               onChange={(event) => handleCategoryChange(event.target.value)}
               className="h-11 w-full appearance-none rounded-xl border border-slate-200 bg-white pl-4 pr-10 text-sm font-medium text-slate-700 outline-none transition focus:border-teal-600"
             >
@@ -466,7 +487,7 @@ export default function ContainersClient() {
                     Category
                   </label>
                   <select
-                    value={type}
+                    value={selectedCategoryId}
                     onChange={(event) => {
                       handleCategoryChange(event.target.value);
                       setMobileFiltersOpen(false);

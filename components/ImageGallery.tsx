@@ -133,14 +133,14 @@ export default function ImageGallery({
 
           <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-300 group-hover:bg-black/10" />
 
-          <button
+          {/* <button
             type="button"
             onClick={toggleZoom}
             title={isZoomed ? "Zoom out" : "Zoom in"}
             className="absolute bottom-4 right-4 flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition hover:bg-black/60"
           >
             <ZoomIn className="h-4 w-4" />
-          </button>
+          </button> */}
         </>
       ) : (
         fallback ?? <GalleryPlaceholder />

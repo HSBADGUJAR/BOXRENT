@@ -248,21 +248,42 @@ export default function OwnerSidebar() {
                 item.href !== "/logout" &&
                 isActive(item.href);
 
+              const className = [
+                "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition",
+                active
+                  ? "bg-teal-50 text-teal-700"
+                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+              ].join(" ");
+
+              const content = (
+                <>
+                  <Icon className="h-5 w-5 shrink-0 text-slate-400" />
+                  <span>{item.name}</span>
+                </>
+              );
+
+              if (item.href === "/logout") {
+                return (
+                  <form key={item.href} action="/logout" method="POST">
+                    <button
+                      type="submit"
+                      onClick={closeMobileMenu}
+                      className={className}
+                    >
+                      {content}
+                    </button>
+                  </form>
+                );
+              }
+
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   onClick={closeMobileMenu}
-                  className={[
-                    "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition",
-                    active
-                      ? "bg-teal-50 text-teal-700"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
-                  ].join(" ")}
+                  className={className}
                 >
-                  <Icon className="h-5 w-5 shrink-0 text-slate-400" />
-
-                  <span>{item.name}</span>
+                  {content}
                 </Link>
               );
             })}
